@@ -460,29 +460,37 @@ function startAudio() {
   noiseBuf = A.createBuffer(1, A.sampleRate * 2, A.sampleRate);
   const nd = noiseBuf.getChannelData(0); for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
   if (C.music) { musicEl = new Audio(C.music); musicEl.loop = true; musicEl.play().catch(() => {}); applyVolume(); return; }
-  // built-in cartoon loop: bouncy marimba tune over an oom-pah bass, woodblock and shaker
-  const hz = (m) => 440 * Math.pow(2, (m - 69) / 12), beat = 60 / 116, sw = beat * .16;      // sw = swing on the off-beats
-  const mallet = (m, t, g = .13) => { tone(musicBus, hz(m), t, .26, 'sine', g); tone(musicBus, hz(m) * 4, t, .07, 'sine', g * .3); };
-  const bars = [   // [bass root, chord, melody in eighth notes (0 = rest)]
-    [36, [60, 64, 67], [72, 0, 76, 79, 0, 76, 72, 0]],
-    [33, [57, 60, 64], [69, 0, 72, 76, 0, 72, 69, 0]],
-    [41, [60, 65, 69], [77, 0, 81, 84, 0, 81, 77, 76]],
-    [43, [59, 62, 67], [79, 0, 83, 86, 83, 79, 74, 0]],
-    [36, [60, 64, 67], [84, 79, 76, 72, 0, 76, 79, 0]],
-    [33, [57, 60, 64], [81, 76, 72, 69, 0, 72, 76, 0]],
-    [41, [60, 65, 69], [77, 81, 84, 81, 77, 0, 74, 77]],
-    [43, [59, 62, 67], [79, 0, 79, 83, 86, 0, 84, 0]],
+  // built-in loop, modelled on the measured feel of a reference recording: ~109 bpm shuffle, C pedal bass,
+  // mostly C and F chords, a sparse whistled tune sitting around G with bluesy B-flat / E-flat passing notes
+  const hz = (m) => 440 * Math.pow(2, (m - 69) / 12), beat = 60 / 109, sw = beat / 6;        // off-beats land on the triplet
+  const at = (t, i) => t + i * beat / 2 + (i % 2 ? sw : 0);
+  const whistle = (m, t, dur) => {                                                         // pure tone with a little scoop and vibrato
+    const o = A.createOscillator(), g = A.createGain(), l = A.createOscillator(), lg = A.createGain();
+    o.frequency.setValueAtTime(hz(m) * .97, t); o.frequency.linearRampToValueAtTime(hz(m), t + .05);
+    l.frequency.value = 5.5; lg.gain.setValueAtTime(0, t); lg.gain.linearRampToValueAtTime(hz(m) * .012, t + dur * .6); l.connect(lg).connect(o.frequency);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.075, t + .03); g.gain.setValueAtTime(.075, t + dur * .7); g.gain.linearRampToValueAtTime(0, t + dur);
+    o.connect(g).connect(musicBus); o.start(t); l.start(t); o.stop(t + dur + .02); l.stop(t + dur + .02);
+  };
+  const C_ = [60, 64, 67], F_ = [60, 65, 69], G_ = [59, 62, 67];
+  const bars = [   // [chord, tune in swung eighths (0 = rest)]
+    [C_, [91, 0, 0, 88, 91, 0, 93, 91]],
+    [F_, [89, 0, 0, 86, 89, 0, 0, 0]],
+    [C_, [91, 0, 94, 93, 91, 0, 88, 0]],
+    [C_, [84, 0, 0, 0, 0, 0, 87, 88]],
+    [F_, [89, 0, 93, 0, 96, 0, 93, 89]],
+    [C_, [91, 0, 0, 88, 84, 0, 0, 0]],
+    [G_, [86, 0, 91, 0, 95, 0, 93, 91]],
+    [C_, [88, 0, 87, 84, 0, 0, 0, 0]],
   ];
   let next = A.currentTime + .1, bar = 0;
   const schedule = () => {
     while (next < A.currentTime + 1.6) {
-      const [root, chord, tune] = bars[bar % bars.length], t = next;
-      tone(musicBus, hz(root), t, beat * .8, 'triangle', .22); tone(musicBus, hz(root + 7), t + beat * 2, beat * .8, 'triangle', .2);    // oom
-      [1, 3].forEach((b) => chord.forEach((m) => tone(musicBus, hz(m), t + b * beat, .14, 'triangle', .045)));                           // pah
-      tune.forEach((m, i) => { if (m) mallet(m, t + i * beat / 2 + (i % 2 ? sw : 0)); });
-      [1, 3].forEach((b) => tone(musicBus, 1150, t + b * beat, .05, 'square', .035, 900));                                               // woodblock
-      for (let i = 0; i < 8; i++) noise(musicBus, t + i * beat / 2 + (i % 2 ? sw : 0), .03, 'highpass', 6500, 0, i % 2 ? .02 : .03);     // shaker
-      if (bar % 8 === 7) tone(musicBus, 500, t + beat * 3.4, .32, 'sine', .07, 1500);                                                    // slide whistle into the repeat
+      const [chord, tune] = bars[bar % bars.length], t = next;
+      [0, 2].forEach((b) => tone(musicBus, hz(36), t + b * beat, beat * .9, 'triangle', .24));                  // the bass never leaves C
+      tone(musicBus, hz(43), at(t, 7), beat * .3, 'triangle', .14);                                             // little pickup into the next bar
+      [1, 3].forEach((b) => chord.forEach((m) => tone(musicBus, hz(m), at(t, b * 2 + 1), .16, 'triangle', .04)));   // off-beat strum
+      tune.forEach((m, i) => { if (m) whistle(m, at(t, i), beat * (tune[i + 1] ? .45 : .9)); });
+      for (let i = 0; i < 8; i++) noise(musicBus, at(t, i), i % 2 ? .04 : .07, 'bandpass', 4200, 0, i % 4 === 2 ? .05 : .022, .8);   // brushed shuffle
       next += beat * 4; bar++;
     }
   };
