@@ -45,7 +45,6 @@ window.CONTENT = {
         links: [{ label: 'Show credential', url: 'https://www.credly.com/badges/cb75953c-2f65-4de6-b756-b95c2d02a7a2/linked_in_profile' }] },
       { title: 'User Experience Design Fundamentals', sub: 'IBM · Issued Jun 2025',
         links: [{ label: 'Show credential', url: 'https://www.credly.com/badges/70bdefe4-0ee0-4495-9469-360cb1ec0d8f/linked_in_profile' }] },
-      { title: 'More on LinkedIn', links: [{ label: 'View on LinkedIn', url: 'https://www.linkedin.com/in/8jiwoo/details/certifications/' }] },
     ] },
     name: { label: 'Awards', items: [
       { heading: 'Awards & scholarships' },
