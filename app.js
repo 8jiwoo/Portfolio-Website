@@ -366,7 +366,7 @@ canvas.addEventListener('wheel', (e) => { if (!S.control) return; e.preventDefau
 function activate(name) {
   sfx(name);
   if (name === 'lights') { S.lightsOn = !S.lightsOn; return; }
-  if (name === 'speaker') { S.musicOn = !S.musicOn; applyVolume(); return; }
+  if (name === 'speaker') { const off = S.muted || !S.musicOn; S.muted = false; S.musicOn = off; applyVolume(); return; }   // if anything is off, the speaker brings the sound back
   if (name === 'globe') { window.open(C.mapUrl, '_blank', 'noopener'); return; }
   if (S.active === name) return reset();
   // desktop: panel is on the left, so park the object right of centre. phone: panel is a bottom sheet, so park it in the top half.
@@ -480,6 +480,7 @@ const SFX = {
 };
 function sfx(name) { if (A && SFX[name]) SFX[name](A.currentTime + .01); }
 function applyVolume() {
+  $('#mute').setAttribute('aria-pressed', S.muted || !S.musicOn);   // corner icon is crossed out whenever the music is off, whichever control did it
   if (!A) return;
   master.gain.setTargetAtTime(S.muted ? 0 : 1, A.currentTime, .05);
   musicBus.gain.setTargetAtTime(S.musicOn ? 1 : 0, A.currentTime, .15);
@@ -534,7 +535,7 @@ function startAudio() {
   };
   schedule(); setInterval(schedule, 500);
 }
-$('#mute').addEventListener('click', (e) => { S.muted = !S.muted; e.currentTarget.setAttribute('aria-pressed', S.muted); applyVolume(); });
+$('#mute').addEventListener('click', () => { const off = S.muted || !S.musicOn; S.muted = !off; S.musicOn = true; applyVolume(); });   // crossed out -> everything back on; otherwise mute everything
 
 // ---------------------------------------------------------------- intro
 $('#enter').addEventListener('click', () => {
