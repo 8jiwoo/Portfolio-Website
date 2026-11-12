@@ -491,9 +491,9 @@ function startAudio() {
   musicBus = A.createGain(); musicBus.connect(master); sfxBus = A.createGain(); sfxBus.connect(master);
   noiseBuf = A.createBuffer(1, A.sampleRate * 2, A.sampleRate);
   const nd = noiseBuf.getChannelData(0); for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
-  // room tone: soft white-noise air, a low computer-fan hum and a slow breeze outside. Always on (the mute button still silences it).
+  // room tone: soft white-noise air, a low computer-fan hum and a slow breeze outside. On the music bus, so the speaker in the room switches it off together with the music (otherwise the toggle is hard to hear).
   const air = A.createBufferSource(); air.buffer = noiseBuf; air.loop = true;
-  const loop = (type, freq, q, gain) => { const f = A.createBiquadFilter(), g = A.createGain(); f.type = type; f.frequency.value = freq; f.Q.value = q; g.gain.value = gain; air.connect(f).connect(g).connect(master); return [f, g]; };
+  const loop = (type, freq, q, gain) => { const f = A.createBiquadFilter(), g = A.createGain(); f.type = type; f.frequency.value = freq; f.Q.value = q; g.gain.value = gain; air.connect(f).connect(g).connect(musicBus); return [f, g]; };
   loop('lowpass', 2600, .3, .010);                                  // the hiss of a quiet room
   loop('bandpass', 180, 1.2, .016);                                  // fan hum from the PC
   const [, breeze] = loop('bandpass', 520, .6, .007);                // wind against the windows, slowly rising and falling

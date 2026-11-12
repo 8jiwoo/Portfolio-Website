@@ -90,8 +90,7 @@ body.intro-open #nav, body.intro-open #mute { opacity: 0; pointer-events: none; 
   .menu-button { font-size: 12px; text-align: center; height: 54px; padding-top: 16px; }
   .menu-button .close { display: none; }
   #panel { top: auto; bottom: calc(62px + var(--safe)); left: 10px; width: calc(100% - 20px); max-width: none; min-width: 0; height: 42vh; height: 42dvh; max-height: none; }
-  #mute { bottom: calc(60px + var(--safe)); right: 4px; }
-  #panel:not(.closed) ~ #mute { opacity: 0; pointer-events: none; }
+  #mute { top: calc(4px + env(safe-area-inset-top, 0px)); bottom: auto; right: 4px; }   /* the menu has the bottom edge, so sound goes up top */
   .item { margin-bottom: 22px; }
 }
 /* touch screens: comfortable tap targets */
