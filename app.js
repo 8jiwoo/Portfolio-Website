@@ -462,10 +462,10 @@ function startAudio() {
   // room tone: soft white-noise air, a low computer-fan hum and a slow breeze outside. Always on (the mute button still silences it).
   const air = A.createBufferSource(); air.buffer = noiseBuf; air.loop = true;
   const loop = (type, freq, q, gain) => { const f = A.createBiquadFilter(), g = A.createGain(); f.type = type; f.frequency.value = freq; f.Q.value = q; g.gain.value = gain; air.connect(f).connect(g).connect(master); return [f, g]; };
-  loop('lowpass', 2600, .3, .028);                                  // the hiss of a quiet room
-  loop('bandpass', 180, 1.2, .05);                                  // fan hum from the PC
-  const [, breeze] = loop('bandpass', 520, .6, .02);                // wind against the windows, slowly rising and falling
-  const lfo = A.createOscillator(), depth = A.createGain(); lfo.frequency.value = .07; depth.gain.value = .015; lfo.connect(depth).connect(breeze.gain); lfo.start();
+  loop('lowpass', 2600, .3, .010);                                  // the hiss of a quiet room
+  loop('bandpass', 180, 1.2, .016);                                  // fan hum from the PC
+  const [, breeze] = loop('bandpass', 520, .6, .007);                // wind against the windows, slowly rising and falling
+  const lfo = A.createOscillator(), depth = A.createGain(); lfo.frequency.value = .07; depth.gain.value = .005; lfo.connect(depth).connect(breeze.gain); lfo.start();
   air.start();
   if (C.music) { musicEl = new Audio(C.music); musicEl.loop = true; musicEl.play().catch(() => {}); applyVolume(); return; }
   // built-in ambient music, made to sound like it comes from the speaker in the room:
