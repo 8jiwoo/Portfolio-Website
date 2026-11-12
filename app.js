@@ -370,7 +370,7 @@ function activate(name) {
   if (name === 'globe') { window.open(C.mapUrl, '_blank', 'noopener'); return; }
   if (S.active === name) return reset();
   // desktop: panel is on the left, so park the object right of centre. phone: panel is a bottom sheet, so park it in the top half.
-  const f = M.objects[name].focus, wide = W > 570, fov = W >= Hh ? f[2] : f[2] * 1.6;
+  const f = M.objects[name].focus, wide = W > 570 && !C.sections[name].row, fov = W >= Hh ? f[2] : f[2] * 1.6;
   tween({ yaw: f[0] - (wide ? fov * .16 : 0), pitch: f[1] - (wide ? 0 : fov * .22), fov, fish: .3 }, 2, EASE.q4);
   openPanel(name);
 }
@@ -403,17 +403,20 @@ function openPanel(name) {
   if (!sec.items.length) inner.appendChild(el('div', 'empty', 'Nothing here yet.'));
   for (const it of sec.items) {
     if (it.heading) { inner.appendChild(el('div', 'heading', it.heading)); continue; }
-    const d = el(it.detail ? 'button' : 'div', 'item' + (it.star ? ' star' : ''));
+    const pop = it.detail || it.zoom, d = el(pop ? 'button' : 'div', 'item' + (it.star ? ' star' : ''));
     fillCard(d, it, false);
-    if (it.detail) { d.type = 'button'; d.appendChild(el('span', 'more', 'Read more')); d.addEventListener('click', () => openModal(it, d)); }
+    if (pop) { d.type = 'button'; if (it.detail) d.appendChild(el('span', 'more', 'Read more')); d.addEventListener('click', () => openModal(it, d)); }
     inner.appendChild(d);
   }
-  inner.scrollTop = 0;
+  inner.scrollTop = inner.scrollLeft = 0;
+  panel.classList.toggle('row', !!sec.row);
   panel.classList.remove('closed');
 }
+$('#panel-inner').addEventListener('wheel', (e) => { if (panel.classList.contains('row') && !e.deltaX) { e.currentTarget.scrollLeft += e.deltaY; e.preventDefault(); } }, { passive: false });   // mouse wheel moves the strip sideways
 const modal = $('#modal'); let modalFrom = null;
 function openModal(it, from) {
   const b = $('#modal-body'); b.textContent = ''; fillCard(b, it, true);
+  modal.classList.toggle('art', !!it.zoom);
   modalFrom = from; modal.classList.remove('closed'); $('#modal-close').focus(); sfx('notebook');
 }
 function closeModal() { modal.classList.add('closed'); if (modalFrom) modalFrom.focus(); modalFrom = null; }

@@ -14,6 +14,8 @@ window.CONTENT = {
   //   { heading }                                               a small group title
   //   { title, sub, text, tech, img, links: [{ label, url }] }  a card
   //   add  detail: '...'  to make a card clickable; it then opens a popup with that text
+  //   add  zoom: true  to make a card open its picture large
+  // A section with  row: true  shows its cards side by side in a strip along the bottom instead of a list.
   // A missing img file is fine: the card shows a plain tile instead.
   sections: {
     computers: { label: 'Projects', items: [
@@ -58,25 +60,25 @@ window.CONTENT = {
       { title: 'SG Eco Loop 2.0 Hackathon', sub: 'Hackathon' },
     ] },
     bag: { label: 'Volunteering', items: [
-      { title: 'Project Rejuven-Aid', sub: '2026 · Volunteer', img: 'assets/volunteer1.jpg',     // EDIT ME: add this picture
+      { title: 'Project Rejuven-Aid', sub: '2026 · Volunteer', img: 'assets/volunteer1.jpg',
         detail: 'As part of the Lumina Scholars Programme, I participated in Project Rejuven-Aid (also known as Silver Homes), a volunteer-driven initiative dedicated to creating healthier, safer and cleaner living environments for disadvantaged seniors.' },
-      { title: 'Chinese New Year Lunch Gathering for the Elderly', sub: '2025 · Assistant Student Organiser', img: 'assets/volunteer2.jpg',   // EDIT ME: add this picture
+      { title: 'Chinese New Year Lunch Gathering for the Elderly', sub: '2025 · Assistant Student Organiser', img: 'assets/volunteer2.jpg',
         detail: 'Organised a Chinese New Year lunch gathering for elderly residents in collaboration with Project Love Lunch. Worked alongside my team from the ground up to plan and coordinate the event, contributing to the organisation and execution of the gathering.' },
     ] },
-    notebook: { label: 'Artworks', items: [
-      { title: 'Living room', sub: '360 panorama', text: 'The room you are standing in.', img: 'assets/pano_4k.webp' },
+    notebook: { label: 'Artworks', row: true, items: [
+      { title: 'Living room', sub: '360 panorama', text: 'The room you are standing in.', img: 'assets/pano_4k.webp', zoom: true },
       // untitled pieces: add  title: '...'  to any of them to caption it
-      { img: 'assets/art/01.jpg', alt: 'Blue ballpoint-style portrait of a young man' },
-      { img: 'assets/art/02.jpg', alt: 'Pencil sketch of a figure in a cap and long coat' },
-      { img: 'assets/art/03.jpg', alt: 'Line drawing of a figure with a bob and layered necklaces' },
-      { img: 'assets/art/04.jpg', alt: 'Pencil portrait of a woman with closed eyes, on an easel' },
-      { img: 'assets/art/05.jpg', alt: 'Pencil study of a classical plaster bust' },
-      { img: 'assets/art/06.jpg', alt: 'Painting of a woman with dark hair, red lips and a choker' },
-      { img: 'assets/art/07.jpg', alt: 'Pink and lilac drawing of a woman in a flowing dress' },
-      { img: 'assets/art/08.jpg', alt: 'Refined pencil drawing of a figure in a cap and long coat' },
-      { img: 'assets/art/09.jpg', alt: 'Colour sketch of a crouching figure in a white shirt' },
-      { img: 'assets/art/10.jpg', alt: 'Line drawing of a figure in a hoodie and blazer' },
-      { img: 'assets/art/11.jpg', alt: 'Early sketch of the figure with a bob and layered necklaces' },
+      { zoom: true, img: 'assets/art/01.jpg', alt: 'Blue ballpoint-style portrait of a young man' },
+      { zoom: true, img: 'assets/art/02.jpg', alt: 'Pencil sketch of a figure in a cap and long coat' },
+      { zoom: true, img: 'assets/art/03.jpg', alt: 'Line drawing of a figure with a bob and layered necklaces' },
+      { zoom: true, img: 'assets/art/04.jpg', alt: 'Pencil portrait of a woman with closed eyes, on an easel' },
+      { zoom: true, img: 'assets/art/05.jpg', alt: 'Pencil study of a classical plaster bust' },
+      { zoom: true, img: 'assets/art/06.jpg', alt: 'Painting of a woman with dark hair, red lips and a choker' },
+      { zoom: true, img: 'assets/art/07.jpg', alt: 'Pink and lilac drawing of a woman in a flowing dress' },
+      { zoom: true, img: 'assets/art/08.jpg', alt: 'Refined pencil drawing of a figure in a cap and long coat' },
+      { zoom: true, img: 'assets/art/09.jpg', alt: 'Colour sketch of a crouching figure in a white shirt' },
+      { zoom: true, img: 'assets/art/10.jpg', alt: 'Line drawing of a figure in a hoodie and blazer' },
+      { zoom: true, img: 'assets/art/11.jpg', alt: 'Early sketch of the figure with a bob and layered necklaces' },
     ] },
     phone: { label: 'Contact', items: [
       { title: 'Email', text: '8jiwoo@gmail.com', links: [{ label: 'Write', url: 'mailto:8jiwoo@gmail.com' }] },

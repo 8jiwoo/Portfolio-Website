@@ -109,14 +109,25 @@ body.intro-open #nav, body.intro-open #mute { opacity: 0; pointer-events: none; 
 .item.star .title::before { content: "\2605  "; }
 .item.star { padding: 10px; border: 1px solid rgba(255, 255, 255, .7); border-radius: 4px; }
 button.item { display: block; width: 100%; padding: 0; background: none; border: 0; text-align: left; }
+/* row: true sections: cards side by side, scrolled sideways, in a strip along the bottom */
+#panel.row .inner { flex-direction: row; gap: 14px; overflow-y: hidden; }
+#panel.row .item { flex: 0 0 auto; width: auto; height: 100%; margin: 0; }
+#panel.row .item img { width: auto; height: calc(100% - 70px); }   /* leaves room for a caption underneath */
+#panel.row .item img:only-child { height: 100%; margin: 0; }
+@media (min-width: 571px) { #panel.row { top: auto; bottom: 20px; right: 70px; width: auto; max-width: none; height: min(46vh, 420px); } }
 button.item .more { display: inline-block; margin-top: 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; padding: 5px 8px; border: 1px solid #fff; border-radius: 4px; }
 button.item:hover .more { background: #fff; color: #222; }
 .ph { display: grid; place-items: center; aspect-ratio: 16 / 10; margin-bottom: 6px; background: rgba(255, 255, 255, .14); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
 #modal { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; padding: 20px; background: rgba(0, 0, 0, .55); transition: opacity .25s; }
 #modal.closed { opacity: 0; pointer-events: none; }
 #modal .card { position: relative; width: min(460px, 100%); max-height: min(80vh, 100dvh - 40px); overflow: auto; padding: 22px 20px 20px;
-  background: rgba(44, 46, 58, .94); border-radius: 6px; }
+  background: rgba(44, 46, 58, .94); border-radius: 6px; scrollbar-width: none; }
+#modal .card::-webkit-scrollbar { display: none; }   /* still scrolls, just without the bar, like the panel */
 #modal img { width: 100%; display: block; margin-bottom: 12px; }
+/* zoom: true items open as large as the window allows */
+#modal.art .card { width: auto; max-width: 100%; max-height: calc(100dvh - 40px); padding-top: 46px; }
+#modal.art img { width: auto; max-width: 100%; max-height: calc(100dvh - 110px); margin: 0 auto 12px; }
+#modal.art img:last-child { margin-bottom: 0; }
 #modal .title { font-weight: 700; font-size: 16px; text-transform: uppercase; padding-right: 54px; }
 #modal .sub { font-size: 12px; opacity: .8; margin: 4px 0 12px; }
 #modal .text { font-size: 13px; line-height: 1.55; }
