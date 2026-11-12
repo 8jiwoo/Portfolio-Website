@@ -37,16 +37,17 @@ body.intro-open #nav, body.intro-open #mute { opacity: 0; pointer-events: none; 
   z-index: 5; overflow: hidden; transition: height .4s ease-out, opacity .4s ease-out; }
 #panel.closed { height: 0; opacity: 0; pointer-events: none; }
 #panel .inner { position: absolute; inset: 0; padding: 53px 15px 15px; overflow: auto; display: flex; flex-direction: column; scrollbar-width: none; }
-#back { position: absolute; top: 10px; left: 10px; z-index: 2; padding: 8px; border: 0; border-radius: 6px;
-  background: rgba(150, 150, 150, .7); font-weight: 700; font-size: 12px; line-height: 1; }
+#back { position: absolute; top: 12px; left: 15px; z-index: 2; padding: 6px 9px; border: 1px solid #fff; border-radius: 4px;
+  background: rgba(0, 0, 0, .25); font-weight: 700; font-size: 11px; line-height: 1; letter-spacing: .04em; }
+#back:hover, #modal-close:hover { background: #fff; color: #222; }
 .item { margin-bottom: 30px; }
 .item img { width: 100%; display: block; margin-bottom: 6px; }
 .item .title { font-weight: 700; font-size: 14px; text-transform: uppercase; margin-bottom: 3px; overflow-wrap: anywhere; }
 .item .sub { font-size: 12px; opacity: .8; margin-bottom: 5px; }
 .item .text { font-size: 12px; overflow-wrap: anywhere; }
-.item .links { display: flex; flex-wrap: wrap; gap: 6px 10px; margin-top: 10px; }
-.item .links a { font-size: 11px; font-weight: 700; text-transform: uppercase; padding: 5px 8px; border: 1px solid #fff; border-radius: 4px; }
-.item .links a:hover { background: #fff; color: #222; }
+.item .links, #modal .links { display: flex; flex-wrap: wrap; gap: 6px 10px; margin-top: 10px; }
+.item .links a, #modal .links a { font-size: 11px; font-weight: 700; text-transform: uppercase; padding: 5px 8px; border: 1px solid #fff; border-radius: 4px; }
+.item .links a:hover, #modal .links a:hover { background: #fff; color: #222; }
 .empty { font-size: 12px; opacity: .8; }
 
 /* ---------- sound ---------- */
@@ -96,7 +97,7 @@ body.intro-open #nav, body.intro-open #mute { opacity: 0; pointer-events: none; 
 /* touch screens: comfortable tap targets */
 @media (hover: none) {
   #back { padding: 11px 12px; }
-  .item .links a { padding: 8px 11px; }
+  .item .links a, #modal .links a { padding: 8px 11px; }
 }
 }
 @media (prefers-reduced-motion: reduce) { #panel, #intro { transition: none; } }
@@ -104,31 +105,36 @@ body.intro-open #nav, body.intro-open #mute { opacity: 0; pointer-events: none; 
 /* ---------- panel extras: group headings, tech line, clickable cards, popup ---------- */
 .heading { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; opacity: .7; margin: 4px 0 14px; padding-bottom: 5px; border-bottom: 1px solid rgba(255, 255, 255, .45); }
 .item { margin-bottom: 22px; }
-.item .tech { font-size: 11px; opacity: .8; margin-top: 6px; }
-.item .tech b { font-weight: 700; }
+.item .tech, #modal .tech { font-size: 11px; opacity: .8; margin-top: 6px; }
+.item .tech b, #modal .tech b { font-weight: 700; }
 .item.star .title::before { content: "\2605  "; }
 .item.star { padding: 10px; border: 1px solid rgba(255, 255, 255, .7); border-radius: 4px; }
 button.item { display: block; width: 100%; padding: 0; background: none; border: 0; text-align: left; }
 /* row: true sections: cards side by side, scrolled sideways, in a strip along the bottom */
 #panel.row .inner { flex-direction: row; gap: 14px; overflow-y: hidden; }
 #panel.row .item { flex: 0 0 auto; width: auto; height: 100%; margin: 0; }
-#panel.row .item img { width: auto; height: calc(100% - 70px); }   /* leaves room for a caption underneath */
-#panel.row .item img:only-child { height: 100%; margin: 0; }
+#panel.row .item img { width: 100%; height: calc(100% - 116px); object-fit: cover; }   /* leaves room for a caption underneath */
+#panel.row .item img:only-child { width: auto; height: 100%; margin: 0; }   /* a bare picture keeps its own shape */
+#panel.row .item .ph { height: calc(100% - 116px); aspect-ratio: auto; }
+#panel.row .item:has(.title) { width: 300px; display: flex; flex-direction: column; }   /* flex: a button would otherwise centre its contents vertically */
+#panel.row .item:has(.title) > * { flex: 0 0 auto; }
+#panel.row .item .more { align-self: flex-start; }   /* captioned cards share one width so their pictures line up */
 @media (min-width: 571px) { #panel.row { top: auto; bottom: 20px; right: 70px; width: auto; max-width: none; height: min(46vh, 420px); } }
 button.item .more { display: inline-block; margin-top: 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; padding: 5px 8px; border: 1px solid #fff; border-radius: 4px; }
 button.item:hover .more { background: #fff; color: #222; }
 .ph { display: grid; place-items: center; aspect-ratio: 16 / 10; margin-bottom: 6px; background: rgba(255, 255, 255, .14); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
 #modal { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; padding: 20px; background: rgba(0, 0, 0, .55); transition: opacity .25s; }
 #modal.closed { opacity: 0; pointer-events: none; }
-#modal .card { position: relative; width: min(460px, 100%); max-height: min(80vh, 100dvh - 40px); overflow: auto; padding: 22px 20px 20px;
+#modal .card { position: relative; width: min(460px, 100%); max-height: min(80vh, 100dvh - 40px); overflow: auto; padding: 46px 20px 20px;
   background: rgba(44, 46, 58, .94); border-radius: 6px; scrollbar-width: none; }
 #modal .card::-webkit-scrollbar { display: none; }   /* still scrolls, just without the bar, like the panel */
 #modal img { width: 100%; display: block; margin-bottom: 12px; }
 /* zoom: true items open as large as the window allows */
-#modal.art .card { width: auto; max-width: 100%; max-height: calc(100dvh - 40px); padding-top: 46px; }
+#modal.art .card { width: auto; max-width: 100%; max-height: calc(100dvh - 40px); }
 #modal.art img { width: auto; max-width: 100%; max-height: calc(100dvh - 110px); margin: 0 auto 12px; }
 #modal.art img:last-child { margin-bottom: 0; }
-#modal .title { font-weight: 700; font-size: 16px; text-transform: uppercase; padding-right: 54px; }
+#modal .title { font-weight: 700; font-size: 16px; text-transform: uppercase; }
 #modal .sub { font-size: 12px; opacity: .8; margin: 4px 0 12px; }
 #modal .text { font-size: 13px; line-height: 1.55; }
-#modal-close { position: absolute; top: 12px; right: 12px; z-index: 1; padding: 7px 8px; border: 0; border-radius: 6px; background: rgba(150, 150, 150, .7); font-weight: 700; font-size: 11px; line-height: 1; }
+#modal-close { position: absolute; top: 9px; right: 10px; z-index: 1; width: 28px; height: 28px; padding: 0 0 2px; border: 1px solid #fff; border-radius: 50%; background: rgba(0, 0, 0, .25); font-size: 18px; line-height: 1; }
+@media (hover: none) { #modal-close { width: 36px; height: 36px; } }

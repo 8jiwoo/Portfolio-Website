@@ -13,26 +13,28 @@ window.CONTENT = {
   // Each section opens from a piece of furniture.
   //   { heading }                                               a small group title
   //   { title, sub, text, tech, img, links: [{ label, url }] }  a card
-  //   add  detail: '...'  to make a card clickable; it then opens a popup with that text
+  //   add  detail: '...'  to make a card clickable; it then opens a popup with that text (plus tech and links, which the card itself then leaves out)
   //   add  zoom: true  to make a card open its picture large
   // A section with  row: true  shows its cards side by side in a strip along the bottom instead of a list.
   // A missing img file is fine: the card shows a plain tile instead.
   sections: {
-    computers: { label: 'Projects', items: [
-      { title: 'PlateLoop', sub: 'Food waste management · Hackathon project',
-        text: "AI tray scanner that measures what's served, eaten and left, so canteens cook the right amount. Kitchen dashboard and Loopi apps for schools, hospitals and offices.",
+    computers: { label: 'Projects', row: true, items: [
+      { title: 'PlateLoop', sub: 'Food waste management · Hackathon project', img: 'assets/plateloop.jpg',
+        detail: "AI tray scanner that measures what's served, eaten and left, so canteens cook the right amount. Kitchen dashboard and Loopi apps for schools, hospitals and offices.",
         tech: 'JavaScript', links: [{ label: 'Code', url: 'https://github.com/8jiwoo/Plateloop' }, { label: 'Live', url: 'https://8jiwoo.github.io/Plateloop/' }] },
       { title: 'Personal Portfolio Website', sub: 'Web development project', img: 'assets/pano_4k.webp',
-        text: 'This site: my hand-drawn living room as a 360° space you can look around and click through.',
+        detail: 'This site: my hand-drawn living room as a 360° space you can look around and click through.',
         tech: 'HTML, CSS, JavaScript, WebGL, Python', links: [{ label: 'Code', url: 'https://github.com/8jiwoo/Portfolio-Website' }] },
-      { title: 'Web Development Project', sub: 'Web development', text: 'EDIT ME: short description.', tech: 'EDIT ME' },
-      { title: 'Full-Stack Application', sub: 'Full-stack development', text: 'EDIT ME: short description.', tech: 'EDIT ME' },
+      { title: 'WhatsApp Inquiry Management System', sub: 'Web development project', img: 'assets/whatsapp.jpg',   // picture not added yet: shows a 'coming soon' tile until this file exists
+        detail: 'AI-powered web platform that automates high-volume WhatsApp customer inquiries for retail and e-commerce. It answers common questions automatically, turns messages into trackable records and supports follow-ups, cutting manual work for sales representatives.' },
+      { title: 'Full-Stack Application', sub: 'Full-stack development', img: 'assets/fullstack.jpg',   // picture not added yet
+        detail: 'EDIT ME: short description.', tech: 'EDIT ME' },
     ] },
     frame: { label: 'Experience', items: [
       { title: 'JPMorgan Chase', sub: 'Incoming Software Engineering Intern', text: '2027 · Singapore' },
     ] },
     laptop: { label: 'Education', items: [
-      { title: 'Nanyang Polytechnic (NYP)', sub: 'School of Information Technology' },
+      { title: 'Nanyang Polytechnic (NYP)', sub: 'Diploma, Information Technology', text: 'Apr 2025 – Apr 2028' },
       { heading: 'Activities & societies' },
       { title: 'SWIFT Club', sub: 'Publicity Committee Member · 2025–Present' },
       { title: 'SEG Club', sub: 'Subcommittee Member · 2024–2025' },
@@ -43,7 +45,7 @@ window.CONTENT = {
       { title: 'SDG Open Hackathon', sub: '2025' },
       { title: 'IMPACT Week 2025', sub: '2025 · Represented Nanyang Polytechnic' },
       { title: 'OELP – Cybersecurity, Tokyo, Japan', sub: 'AY2026 · Overseas Experiential Learning Programme, DDAS, NYP SIT' },
-      { title: 'SG Eco Loop 2.0 Hackathon', sub: 'Hackathon' },
+      { title: 'SG Eco Loop 2.0 Hackathon', sub: 'Singapore Deep-Tech Alliance · Certificate of Completion · Oct 2026', img: 'assets/ecoloop.jpg', zoom: true },
     ] },
     certs: { label: 'Certs', items: [
       { title: 'Navigating AI & Digital Safety with Confidence Workshop', sub: 'Digital Defence Alliance Singapore (DDAS) · Issued Nov 2026',

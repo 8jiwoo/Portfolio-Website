@@ -388,8 +388,8 @@ function fillCard(d, it, full) {
   if (it.sub) d.appendChild(el('div', 'sub', it.sub));
   if (it.text) d.appendChild(el('div', 'text', it.text));
   if (full && it.detail) d.appendChild(el('div', 'text', it.detail));
-  if (it.tech) { const t = el('div', 'tech'); t.append(el('b', '', 'Built with '), it.tech); d.appendChild(t); }
-  if (it.links && it.links.length) {
+  if (it.tech && (full || !it.detail)) { const t = el('div', 'tech'); t.append(el('b', '', 'Built with '), it.tech); d.appendChild(t); }
+  if (it.links && it.links.length && (full || !it.detail)) {
     const l = el('div', 'links');
     for (const k of it.links) { const a = el('a', '', k.label); a.href = k.url; if (!/^mailto:/.test(k.url)) { a.target = '_blank'; a.rel = 'noopener'; } l.appendChild(a); }
     d.appendChild(l);
