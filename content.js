@@ -6,7 +6,7 @@ window.CONTENT = {
 
   github: '8jiwoo',                 // shown on the right monitor
   youtube: '4iV4Q7z46dA',           // YouTube video id played on the left monitor (must allow embedding)
-  music: '',                        // optional: path to your own mp3 (e.g. 'assets/music.mp3'). Empty = built-in whistled shuffle loop
+  music: '',                        // optional: path to your own mp3 (e.g. 'assets/music.mp3'). Empty = built-in ambient music
   // the globe: satellite view over Nanyang Polytechnic, School of Information Technology
   mapUrl: 'https://www.google.com/maps/@?api=1&map_action=map&center=1.3801,103.8490&zoom=18&basemap=satellite',
 

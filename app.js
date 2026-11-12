@@ -11,7 +11,7 @@ if (!gl) { intro.querySelector('.loading-text').textContent = 'This site needs W
 // ---------------------------------------------------------------- state
 const view = { yaw: 0, pitch: 0, fov: 160, fish: 1 };       // degrees; fish 0 = flat, 1 = full fisheye
 const HOME = { yaw: 0, pitch: -3, fov: 120, fish: 0.3 };
-const S = { entered: false, control: false, active: null, hover: 0, hoverA: 0, lights: 1, lightsOn: true, musicOn: true, muted: false };
+const S = { entered: false, control: false, active: null, hover: 0, hoverA: 0, lights: 0, lightsOn: false, musicOn: true, muted: false };
 const byId = {}; for (const k in M.objects) byId[M.objects[k].id] = k;
 let W = 1, Hh = 1, half = [1, 1], tw = null, idsData = null;
 
@@ -460,41 +460,38 @@ function startAudio() {
   noiseBuf = A.createBuffer(1, A.sampleRate * 2, A.sampleRate);
   const nd = noiseBuf.getChannelData(0); for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
   if (C.music) { musicEl = new Audio(C.music); musicEl.loop = true; musicEl.play().catch(() => {}); applyVolume(); return; }
-  // built-in loop, modelled on the measured feel of a reference recording: ~109 bpm shuffle, C pedal bass,
-  // mostly C and F chords, a sparse whistled tune sitting around G with bluesy B-flat / E-flat passing notes
-  const hz = (m) => 440 * Math.pow(2, (m - 69) / 12), beat = 60 / 109, sw = beat / 6;        // off-beats land on the triplet
-  const at = (t, i) => t + i * beat / 2 + (i % 2 ? sw : 0);
-  const whistle = (m, t, dur) => {                                                         // pure tone with a little scoop and vibrato
-    const o = A.createOscillator(), g = A.createGain(), l = A.createOscillator(), lg = A.createGain();
-    o.frequency.setValueAtTime(hz(m) * .97, t); o.frequency.linearRampToValueAtTime(hz(m), t + .05);
-    l.frequency.value = 5.5; lg.gain.setValueAtTime(0, t); lg.gain.linearRampToValueAtTime(hz(m) * .012, t + dur * .6); l.connect(lg).connect(o.frequency);
-    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.075, t + .03); g.gain.setValueAtTime(.075, t + dur * .7); g.gain.linearRampToValueAtTime(0, t + dur);
-    o.connect(g).connect(musicBus); o.start(t); l.start(t); o.stop(t + dur + .02); l.stop(t + dur + .02);
-  };
-  const C_ = [60, 64, 67], F_ = [60, 65, 69], G_ = [59, 62, 67];
-  const bars = [   // [chord, tune in swung eighths (0 = rest)]
-    [C_, [91, 0, 0, 88, 91, 0, 93, 91]],
-    [F_, [89, 0, 0, 86, 89, 0, 0, 0]],
-    [C_, [91, 0, 94, 93, 91, 0, 88, 0]],
-    [C_, [84, 0, 0, 0, 0, 0, 87, 88]],
-    [F_, [89, 0, 93, 0, 96, 0, 93, 89]],
-    [C_, [91, 0, 0, 88, 84, 0, 0, 0]],
-    [G_, [86, 0, 91, 0, 95, 0, 93, 91]],
-    [C_, [88, 0, 87, 84, 0, 0, 0, 0]],
-  ];
-  let next = A.currentTime + .1, bar = 0;
-  const schedule = () => {
-    while (next < A.currentTime + 1.6) {
-      const [chord, tune] = bars[bar % bars.length], t = next;
-      [0, 2].forEach((b) => tone(musicBus, hz(36), t + b * beat, beat * .9, 'triangle', .24));                  // the bass never leaves C
-      tone(musicBus, hz(43), at(t, 7), beat * .3, 'triangle', .14);                                             // little pickup into the next bar
-      [1, 3].forEach((b) => chord.forEach((m) => tone(musicBus, hz(m), at(t, b * 2 + 1), .16, 'triangle', .04)));   // off-beat strum
-      tune.forEach((m, i) => { if (m) whistle(m, at(t, i), beat * (tune[i + 1] ? .45 : .9)); });
-      for (let i = 0; i < 8; i++) noise(musicBus, at(t, i), i % 2 ? .04 : .07, 'bandpass', 4200, 0, i % 4 === 2 ? .05 : .022, .8);   // brushed shuffle
-      next += beat * 4; bar++;
+  // built-in ambient music, made to sound like it comes from the speaker in the room:
+  // slow soft chords and a few stray notes, muffled a little and sent through a room echo
+  const room = A.createConvolver(), len = Math.floor(A.sampleRate * 2.4), ir = A.createBuffer(2, len, A.sampleRate);
+  for (let ch = 0; ch < 2; ch++) { const d = ir.getChannelData(ch); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3.2); }
+  room.buffer = ir;
+  const tone_ = A.createBiquadFilter(); tone_.type = 'lowpass'; tone_.frequency.value = 1500;
+  const dry = A.createGain(), wet = A.createGain(); dry.gain.value = .5; wet.gain.value = .55;
+  tone_.connect(dry).connect(musicBus); tone_.connect(room).connect(wet).connect(musicBus);
+  const hz = (m) => 440 * Math.pow(2, (m - 69) / 12);
+  const pad = (m, t, dur, g) => {                                  // a note that swells in and fades out slowly
+    for (const det of [-5, 5]) {
+      const o = A.createOscillator(), n = A.createGain();
+      o.type = 'triangle'; o.frequency.value = hz(m); o.detune.value = det;
+      n.gain.setValueAtTime(0, t); n.gain.linearRampToValueAtTime(g, t + dur * .4); n.gain.linearRampToValueAtTime(0, t + dur);
+      o.connect(n).connect(tone_); o.start(t); o.stop(t + dur + .05);
     }
   };
-  schedule(); setInterval(schedule, 300);
+  const chords = [[48, 55, 64, 67, 71], [45, 52, 60, 64, 67], [41, 53, 57, 60, 64], [43, 50, 59, 62, 69]];   // Cmaj7, Am7, Fmaj7, G6/9
+  const span = 9;                                                   // seconds per chord
+  let next = A.currentTime + .1, bar = 0;
+  const schedule = () => {
+    while (next < A.currentTime + 2) {
+      const ch = chords[bar % 4], t = next;
+      ch.forEach((m, i) => pad(m, t + i * .35, span * 1.25, i ? .03 : .055));
+      for (let k = 0; k < 3; k++) if (Math.random() < .7) {         // a few soft bell-like notes drifting over the top
+        const m = ch[1 + Math.floor(Math.random() * 4)] + 12 * (1 + Math.floor(Math.random() * 2));
+        tone(tone_, hz(m), t + 1 + Math.random() * (span - 2), 3.5, 'sine', .05);
+      }
+      next += span; bar++;
+    }
+  };
+  schedule(); setInterval(schedule, 500);
 }
 $('#mute').addEventListener('click', (e) => { S.muted = !S.muted; e.currentTarget.setAttribute('aria-pressed', S.muted); applyVolume(); });
 
