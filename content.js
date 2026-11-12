@@ -27,7 +27,7 @@ window.CONTENT = {
       { title: 'Full-Stack Application', sub: 'Full-stack development', text: 'EDIT ME: short description.', tech: 'EDIT ME' },
     ] },
     frame: { label: 'Experience', items: [
-      { title: 'JPMorgan Chase', sub: 'Incoming Software Engineering Intern' },
+      { title: 'JPMorgan Chase', sub: 'Incoming Software Engineering Intern', text: '2027 · Singapore' },
     ] },
     laptop: { label: 'Education', items: [
       { title: 'Nanyang Polytechnic (NYP)', sub: 'School of Information Technology' },
@@ -37,9 +37,14 @@ window.CONTENT = {
       { title: 'NYP Lumina Programme', sub: 'Capstone Leadership Development Programme' },
     ] },
     certs: { label: 'Certs', items: [
-      { title: 'Navigating AI & Digital Safety with Confidence', sub: 'Workshop' },
-      { title: 'AI Fluency Framework and Foundations', sub: 'Certificate of Completion' },
-      { title: 'Web Development Functions and User Experience Design Fundamentals', sub: 'Certificate' },
+      { title: 'Navigating AI & Digital Safety with Confidence Workshop', sub: 'Digital Defence Alliance Singapore (DDAS) · Issued Nov 2026',
+        links: [{ label: 'Show credential', url: 'https://credsverse.com/credentials/bb0ee4ca-b5f7-495c-a57f-98cc6a911a50?preview=1' }] },
+      { title: 'AI Fluency Framework & Foundations', sub: 'Anthropic · Certificate of Completion · Issued Jan 2026',
+        links: [{ label: 'Show credential', url: 'https://verify.skilljar.com/c/ysw85cow8whc' }] },
+      { title: 'Web Development Fundamentals', sub: 'IBM · Issued Jul 2025',
+        links: [{ label: 'Show credential', url: 'https://www.credly.com/badges/cb75953c-2f65-4de6-b756-b95c2d02a7a2/linked_in_profile' }] },
+      { title: 'User Experience Design Fundamentals', sub: 'IBM · Issued Jun 2025',
+        links: [{ label: 'Show credential', url: 'https://www.credly.com/badges/70bdefe4-0ee0-4495-9469-360cb1ec0d8f/linked_in_profile' }] },
       { title: 'More on LinkedIn', links: [{ label: 'View on LinkedIn', url: 'https://www.linkedin.com/in/8jiwoo/details/certifications/' }] },
     ] },
     name: { label: 'Awards', items: [
