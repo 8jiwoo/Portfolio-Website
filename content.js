@@ -7,8 +7,8 @@ window.CONTENT = {
   github: '8jiwoo',                 // shown on the right monitor
   youtube: '4iV4Q7z46dA',           // YouTube video id played on the left monitor (must allow embedding)
   music: '',                        // optional: path to your own mp3 (e.g. 'assets/music.mp3'). Empty = built-in cartoon loop
-  // the globe: satellite view over the Namib coast (Sossusvlei)
-  mapUrl: 'https://www.google.com/maps/@?api=1&map_action=map&center=-24.73,15.05&zoom=9&basemap=satellite',
+  // the globe: satellite view over Nanyang Polytechnic, School of Information Technology
+  mapUrl: 'https://www.google.com/maps/@?api=1&map_action=map&center=1.3801,103.8490&zoom=18&basemap=satellite',
 
   // Each section opens from a piece of furniture.
   //   { heading }                                               a small group title
