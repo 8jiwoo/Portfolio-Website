@@ -1,0 +1,103 @@
+:root {
+  --yellow: #f0b41c;
+  --menuwidth: calc(100vw - 40px);
+  --gap: 16px;
+  --btn: calc((var(--menuwidth) - var(--gap) * 3) / 4);
+  /* hand-drawn pointer, hotspot at the fingertip */
+  --cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 36 36'%3E%3Cpath d='M11 3c2 0 3.300 1.500 3.300 3.500V15l8.200 1.600c3 .600 4.500 2.600 4.200 5.600l-.800 6.300c-.300 2.600-2.200 4.500-5 4.500h-8.400c-2 0-3.600-1-4.600-2.800L3.600 22c-1-1.900.900-4 3-3l1.100.600V6.500C7.700 4.500 9 3 11 3z' fill='%23f0b41c' stroke='%23111' stroke-width='2.400' stroke-linejoin='round'/%3E%3Cpath d='M14.500 22v5M19 22v5M23.500 22.500v4.500' stroke='%23111' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") 11 3;
+}
+* { box-sizing: border-box; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; margin: 0; overflow: hidden; background: #000; color: #fff;
+  font: 500 14px/1.4 "Helvetica Neue", Helvetica, Arial, sans-serif; cursor: var(--cursor), auto; }
+button { font: inherit; color: inherit; cursor: var(--cursor), pointer; }
+a { color: inherit; text-decoration: none; cursor: var(--cursor), pointer; }
+:focus-visible { outline: 2px solid var(--yellow); outline-offset: 2px; }
+
+#pano { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+#pano.hot { cursor: var(--cursor), pointer; }
+
+/* YouTube monitor: a 640x360 box warped onto the screen with matrix3d */
+#tv { position: fixed; left: 0; top: 0; width: 640px; height: 360px; transform-origin: 0 0; pointer-events: none; display: none; background: #000; }
+#tv iframe { width: 100%; height: 100%; border: 0; display: block; }
+#tv.live { pointer-events: auto; }
+
+/* ---------- menu ---------- */
+#nav { position: fixed; top: 0; left: 20px; width: var(--menuwidth); z-index: 5; overflow-x: auto; scrollbar-width: none; transition: opacity .4s; }
+#nav::-webkit-scrollbar { display: none; }
+#nav-track { display: flex; gap: var(--gap); width: max-content; }
+.menu-button { flex: 0 0 var(--btn); height: 60px; padding: 14px 0 0; background: none; border: 0; text-align: left;
+  font-size: 16px; font-weight: 700; text-transform: uppercase; text-shadow: 1px 1px 1px rgba(64, 64, 64, .6); position: relative; }
+.menu-button .line { display: block; height: 1px; margin-top: 9px; background: #fff; box-shadow: 1px 1px 1px rgba(64, 64, 64, .5); }
+.menu-button .close { position: absolute; right: 0; top: 14px; opacity: 0; transition: opacity .25s; }
+.menu-button.active .close { opacity: 1; }
+.menu-button:hover .line, .menu-button.active .line { height: 2px; margin-top: 8px; }
+body.intro-open #nav, body.intro-open #mute { opacity: 0; pointer-events: none; }
+
+/* ---------- panel ---------- */
+#panel { position: fixed; left: 20px; top: 80px; width: var(--btn); max-width: 330px; min-width: 240px; height: 80vh; max-height: 800px;
+  background: rgba(121, 121, 121, .1); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
+  z-index: 5; overflow: hidden; transition: height .4s ease-out, opacity .4s ease-out; }
+#panel.closed { height: 0; opacity: 0; pointer-events: none; }
+#panel .inner { position: absolute; inset: 0; padding: 53px 15px 15px; overflow: auto; display: flex; flex-direction: column; scrollbar-width: none; }
+#back { position: absolute; top: 10px; left: 10px; z-index: 2; padding: 8px; border: 0; border-radius: 6px;
+  background: rgba(150, 150, 150, .7); font-weight: 700; font-size: 12px; line-height: 1; }
+.item { margin-bottom: 30px; }
+.item img { width: 100%; display: block; margin-bottom: 6px; }
+.item .title { font-weight: 700; font-size: 14px; text-transform: uppercase; margin-bottom: 3px; overflow-wrap: anywhere; }
+.item .sub { font-size: 12px; opacity: .8; margin-bottom: 5px; }
+.item .text { font-size: 12px; overflow-wrap: anywhere; }
+.item .links { display: flex; flex-wrap: wrap; gap: 6px 10px; margin-top: 10px; }
+.item .links a { font-size: 11px; font-weight: 700; text-transform: uppercase; padding: 5px 8px; border: 1px solid #fff; border-radius: 4px; }
+.item .links a:hover { background: #fff; color: #222; }
+.empty { font-size: 12px; opacity: .8; }
+
+/* ---------- sound ---------- */
+#mute { position: fixed; right: 20px; bottom: 20px; z-index: 5; width: 44px; height: 44px; padding: 10px; background: none; border: 0;
+  filter: drop-shadow(1px 1px 1px rgba(64, 64, 64, .6)); transition: opacity .4s; }
+#mute .off { display: none; }
+#mute[aria-pressed="true"] .on { display: none; }
+#mute[aria-pressed="true"] .off { display: inline; }
+
+/* ---------- loading / intro ---------- */
+#intro { position: fixed; inset: 0; z-index: 20; background: #fff; color: #111; display: grid; place-items: center;
+  text-align: center; padding: 20px; transition: opacity .4s; }
+#intro.gone { opacity: 0; pointer-events: none; }
+/* both messages share the one centred cell and cross-fade */
+.loading-text, .complete-text { grid-area: 1 / 1; font-weight: 700; font-size: 12px; line-height: 1.5; transition: opacity .5s; }
+.complete-text { opacity: 0; font-weight: 500; pointer-events: none; position: relative; z-index: 1; }
+#intro:not(.loading) .loading-text { opacity: 0; pointer-events: none; }   /* otherwise it sits over the button and eats the click */
+#intro:not(.loading) .complete-text { opacity: 1; pointer-events: auto; transition-delay: .5s; }
+#enter { margin-top: 10px; padding: 6px 8px; background: none; border: 1.5px solid #111; border-radius: 4px; color: #111; font-weight: 700; font-size: 12px; }
+#enter:hover { background: #111; color: #fff; }
+
+/* Everything below scales with the window. Four menu items across, like the reference, until they'd get cramped. */
+.menu-button { font-size: clamp(12px, 0.55vw + 9px, 16px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#panel { width: clamp(240px, var(--btn), 330px); height: min(80vh, 800px, 100dvh - 100px); }
+@media (max-width: 760px) {
+  :root { --btn: calc((var(--menuwidth) - var(--gap) * 2) / 3); }
+}
+/* phones held sideways: short screen, keep the menu on top but slimmer */
+@media (max-width: 1024px) and (max-height: 500px) {
+  .menu-button { height: 40px; padding-top: 8px; font-size: 12px; }
+  .menu-button .line { margin-top: 5px; }
+  .menu-button .close { top: 8px; }
+  #panel { top: 50px; height: calc(100vh - 70px); height: calc(100dvh - 70px); width: 260px; }
+}
+/* phones upright: menu moves to the thumb, panel becomes a bottom sheet */
+@media (max-width: 570px) {
+  :root { --menuwidth: calc(100vw - 20px); --gap: 10px; --safe: env(safe-area-inset-bottom, 0px); }
+  #nav { top: auto; bottom: 0; left: 10px; padding-bottom: var(--safe); }
+  .menu-button { font-size: 12px; text-align: center; height: 54px; padding-top: 16px; }
+  .menu-button .close { display: none; }
+  #panel { top: auto; bottom: calc(62px + var(--safe)); left: 10px; width: calc(100% - 20px); max-width: none; min-width: 0; height: 42vh; height: 42dvh; max-height: none; }
+  #mute { bottom: calc(60px + var(--safe)); right: 4px; }
+  #panel:not(.closed) ~ #mute { opacity: 0; pointer-events: none; }
+  .item { margin-bottom: 22px; }
+}
+/* touch screens have no cursor to restyle; make tap targets comfortable */
+@media (hover: none) {
+  html, body, button, a { cursor: auto; }
+  #back { padding: 11px 12px; }
+  .item .links a { padding: 8px 11px; }
+}
+@media (prefers-reduced-motion: reduce) { #panel, #intro { transition: none; } }
