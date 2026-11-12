@@ -65,6 +65,7 @@ body.intro-open #nav, body.intro-open #mute { opacity: 0; pointer-events: none; 
 .complete-text { opacity: 0; font-weight: 500; pointer-events: none; position: relative; z-index: 1; }
 #intro:not(.loading) .loading-text { opacity: 0; pointer-events: none; }   /* otherwise it sits over the button and eats the click */
 #intro:not(.loading) .complete-text { opacity: 1; pointer-events: auto; transition-delay: .5s; }
+#intro.gone .complete-text { pointer-events: none; }   /* otherwise the faded intro text leaves a dead patch in the middle of the room */
 #enter { margin-top: 10px; padding: 6px 8px; background: none; border: 1.5px solid #111; border-radius: 4px; color: #111; font-weight: 700; font-size: 12px; }
 #enter:hover { background: #111; color: #fff; }
 

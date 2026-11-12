@@ -65,6 +65,18 @@ window.CONTENT = {
     ] },
     notebook: { label: 'Artworks', items: [
       { title: 'Living room', sub: '360 panorama', text: 'The room you are standing in.', img: 'assets/pano_4k.webp' },
+      // untitled pieces: add  title: '...'  to any of them to caption it
+      { img: 'assets/art/01.jpg', alt: 'Blue ballpoint-style portrait of a young man' },
+      { img: 'assets/art/02.jpg', alt: 'Pencil sketch of a figure in a cap and long coat' },
+      { img: 'assets/art/03.jpg', alt: 'Line drawing of a figure with a bob and layered necklaces' },
+      { img: 'assets/art/04.jpg', alt: 'Pencil portrait of a woman with closed eyes, on an easel' },
+      { img: 'assets/art/05.jpg', alt: 'Pencil study of a classical plaster bust' },
+      { img: 'assets/art/06.jpg', alt: 'Painting of a woman with dark hair, red lips and a choker' },
+      { img: 'assets/art/07.jpg', alt: 'Pink and lilac drawing of a woman in a flowing dress' },
+      { img: 'assets/art/08.jpg', alt: 'Refined pencil drawing of a figure in a cap and long coat' },
+      { img: 'assets/art/09.jpg', alt: 'Colour sketch of a crouching figure in a white shirt' },
+      { img: 'assets/art/10.jpg', alt: 'Line drawing of a figure in a hoodie and blazer' },
+      { img: 'assets/art/11.jpg', alt: 'Early sketch of the figure with a bob and layered necklaces' },
     ] },
     phone: { label: 'Contact', items: [
       { title: 'Email', text: '8jiwoo@gmail.com', links: [{ label: 'Write', url: 'mailto:8jiwoo@gmail.com' }] },

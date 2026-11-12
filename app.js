@@ -380,7 +380,7 @@ function reset() {
 }
 function fillCard(d, it, full) {
   if (it.img) {
-    const i = el('img'); i.src = it.img; i.alt = it.title || ''; i.loading = 'lazy';
+    const i = el('img'); i.src = it.img; i.alt = it.title || it.alt || ''; i.loading = 'lazy';
     i.onerror = () => i.replaceWith(el('div', 'ph', 'Photo coming soon'));       // picture not added yet
     d.appendChild(i);
   }
@@ -437,7 +437,13 @@ nav.addEventListener('scroll', () => { const w = setW(); if (nav.scrollLeft < w 
 nav.addEventListener('wheel', (e) => { if (!e.deltaX) { nav.scrollLeft += e.deltaY; e.preventDefault(); } }, { passive: false });
 const homeNav = () => { nav.scrollLeft = setW(); };
 requestAnimationFrame(homeNav); addEventListener('resize', homeNav);   // item widths change with the window
-function markNav() { track.querySelectorAll('.menu-button').forEach((b) => b.classList.toggle('active', b.dataset.k === S.active)); }
+function markNav() {
+  track.querySelectorAll('.menu-button').forEach((b) => b.classList.toggle('active', b.dataset.k === S.active));
+  if (!S.active) return;
+  // slide the open section's button to the left edge, above the panel. Of its three copies, use the one that keeps the scroll inside the wrap limits above.
+  const w = setW(), bs = [...track.querySelectorAll(`.menu-button[data-k="${S.active}"]`)], b = bs.find((x) => x.offsetLeft >= w * .5 && x.offsetLeft < w * 1.5) || bs[1];
+  if (b) nav.scrollTo({ left: b.offsetLeft, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+}
 
 // ---------------------------------------------------------------- sound (all synthesised, no audio files needed)
 let A = null, master, musicBus, sfxBus, musicEl = null;
