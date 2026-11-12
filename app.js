@@ -213,9 +213,6 @@ async function loadGithub() {
     const j = (u) => fetch(u).then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); });
     const [user, repos] = await Promise.all([j(`https://api.github.com/users/${C.github}`), j(`https://api.github.com/users/${C.github}/repos?sort=updated&per_page=12`)]);
     const mine = repos.filter((r) => !r.fork);
-    C.sections.computers.items.push(...mine.map((r) => ({ title: r.name, sub: [r.language, 'updated ' + r.updated_at.slice(0, 10)].filter(Boolean).join(' · '), text: r.description || '',
-      links: [{ label: 'Code', url: r.html_url }].concat(r.homepage ? [{ label: 'Live', url: r.homepage }] : []) })));
-    if (S.active === 'computers') openPanel('computers');
     drawGithub(user, mine);
     const img = new Image(); img.crossOrigin = 'anonymous'; img.onload = () => drawGithub(user, mine, img); img.src = user.avatar_url;
   } catch (e) { console.warn('GitHub data unavailable, showing the offline card', e); }
@@ -359,6 +356,23 @@ function reset() {
   S.active = null; panel.classList.add('closed'); tv.classList.remove('live'); markNav();
   tween(HOME, 2, EASE.q4);
 }
+function fillCard(d, it, full) {
+  if (it.img) {
+    const i = el('img'); i.src = it.img; i.alt = it.title || ''; i.loading = 'lazy';
+    i.onerror = () => i.replaceWith(el('div', 'ph', 'Photo coming soon'));       // picture not added yet
+    d.appendChild(i);
+  }
+  if (it.title) { const t = el('div', 'title', it.title); if (full) t.id = 'modal-title'; d.appendChild(t); }
+  if (it.sub) d.appendChild(el('div', 'sub', it.sub));
+  if (it.text) d.appendChild(el('div', 'text', it.text));
+  if (full && it.detail) d.appendChild(el('div', 'text', it.detail));
+  if (it.tech) { const t = el('div', 'tech'); t.append(el('b', '', 'Built with '), it.tech); d.appendChild(t); }
+  if (it.links && it.links.length) {
+    const l = el('div', 'links');
+    for (const k of it.links) { const a = el('a', '', k.label); a.href = k.url; if (!/^mailto:/.test(k.url)) { a.target = '_blank'; a.rel = 'noopener'; } l.appendChild(a); }
+    d.appendChild(l);
+  }
+}
 function openPanel(name) {
   S.active = name; markNav();
   tv.classList.toggle('live', name === 'computers');
@@ -366,27 +380,29 @@ function openPanel(name) {
   inner.textContent = '';
   if (!sec.items.length) inner.appendChild(el('div', 'empty', 'Nothing here yet.'));
   for (const it of sec.items) {
-    const d = el('div', 'item');
-    if (it.img) { const i = el('img'); i.src = it.img; i.alt = it.title || ''; i.loading = 'lazy'; d.appendChild(i); }
-    if (it.title) d.appendChild(el('div', 'title', it.title));
-    if (it.sub) d.appendChild(el('div', 'sub', it.sub));
-    if (it.text) d.appendChild(el('div', 'text', it.text));
-    if (it.links && it.links.length) {
-      const l = el('div', 'links');
-      for (const k of it.links) { const a = el('a', '', k.label); a.href = k.url; if (!/^mailto:/.test(k.url)) { a.target = '_blank'; a.rel = 'noopener'; } l.appendChild(a); }
-      d.appendChild(l);
-    }
+    if (it.heading) { inner.appendChild(el('div', 'heading', it.heading)); continue; }
+    const d = el(it.detail ? 'button' : 'div', 'item' + (it.star ? ' star' : ''));
+    fillCard(d, it, false);
+    if (it.detail) { d.type = 'button'; d.appendChild(el('span', 'more', 'Read more')); d.addEventListener('click', () => openModal(it, d)); }
     inner.appendChild(d);
   }
   inner.scrollTop = 0;
   panel.classList.remove('closed');
 }
+const modal = $('#modal'); let modalFrom = null;
+function openModal(it, from) {
+  const b = $('#modal-body'); b.textContent = ''; fillCard(b, it, true);
+  modalFrom = from; modal.classList.remove('closed'); $('#modal-close').focus(); sfx('notebook');
+}
+function closeModal() { modal.classList.add('closed'); if (modalFrom) modalFrom.focus(); modalFrom = null; }
+$('#modal-close').addEventListener('click', closeModal);
+modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
 function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
 $('#back').addEventListener('click', reset);
-addEventListener('keydown', (e) => { if (e.key === 'Escape' && S.active) reset(); });
+addEventListener('keydown', (e) => { if (e.key !== 'Escape') return; if (!modal.classList.contains('closed')) closeModal(); else if (S.active) reset(); });
 
 // menu: the list is repeated three times and the scroll position wraps, so it loops forever
-const track = $('#nav-track'), order = ['computers', 'laptop', 'certs', 'name', 'bag', 'notebook', 'phone'];
+const track = $('#nav-track'), order = ['computers', 'frame', 'laptop', 'certs', 'name', 'bag', 'notebook', 'phone'];
 for (let r = 0; r < 3; r++) for (const k of order) {
   const b = el('button', 'menu-button'); b.type = 'button'; b.dataset.k = k;
   b.append(el('span', '', C.sections[k].label), el('span', 'close', '×'), el('span', 'line'));
@@ -427,6 +443,7 @@ const SFX = {
   bag: (t) => { for (let i = 0; i < 7; i++) noise(sfxBus, t + i * .06 + Math.random() * .03, .07, 'bandpass', 2200 + Math.random() * 3000, 0, .22, .7); }, // paper rustle
   notebook: (t) => { noise(sfxBus, t, .3, 'highpass', 700, 5200, .22); },                                                                  // page flip
   name: (t) => { [659, 784, 1047].forEach((f, i) => tone(sfxBus, f, t + i * .1, .35, 'triangle', .12)); },                                 // little fanfare
+  frame: (t) => { tone(sfxBus, 620, t, .12, 'sine', .12, 880); tone(sfxBus, 880, t + .1, .3, 'sine', .1, 1320); },                         // bright chirp
   speaker: (t) => { tone(sfxBus, 95, t, .2, 'sine', .5, 42); noise(sfxBus, t, .08, 'lowpass', 900, 0, .2); },                              // thump
 };
 function sfx(name) { if (A && SFX[name]) SFX[name](A.currentTime + .01); }
@@ -443,23 +460,29 @@ function startAudio() {
   noiseBuf = A.createBuffer(1, A.sampleRate * 2, A.sampleRate);
   const nd = noiseBuf.getChannelData(0); for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
   if (C.music) { musicEl = new Audio(C.music); musicEl.loop = true; musicEl.play().catch(() => {}); applyVolume(); return; }
-  // built-in lo-fi loop: four jazzy chords, lazy drums, vinyl crackle
-  const lp = A.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1900; lp.connect(musicBus);
-  const cb = A.createBuffer(1, A.sampleRate * 3, A.sampleRate), cd = cb.getChannelData(0);
-  for (let i = 0; i < cd.length; i++) cd[i] = (Math.random() * 2 - 1) * .012 + (Math.random() < .0007 ? Math.random() * .5 : 0);
-  const crackle = A.createBufferSource(); crackle.buffer = cb; crackle.loop = true; crackle.connect(musicBus); crackle.start();
-  const hz = (m) => 440 * Math.pow(2, (m - 69) / 12), beat = 60 / 74;
-  const chords = [[53, 57, 60, 64], [52, 55, 59, 62], [50, 53, 57, 60], [48, 52, 55, 59]], penta = [72, 74, 76, 79, 81, 84];
+  // built-in cartoon loop: bouncy marimba tune over an oom-pah bass, woodblock and shaker
+  const hz = (m) => 440 * Math.pow(2, (m - 69) / 12), beat = 60 / 116, sw = beat * .16;      // sw = swing on the off-beats
+  const mallet = (m, t, g = .13) => { tone(musicBus, hz(m), t, .26, 'sine', g); tone(musicBus, hz(m) * 4, t, .07, 'sine', g * .3); };
+  const bars = [   // [bass root, chord, melody in eighth notes (0 = rest)]
+    [36, [60, 64, 67], [72, 0, 76, 79, 0, 76, 72, 0]],
+    [33, [57, 60, 64], [69, 0, 72, 76, 0, 72, 69, 0]],
+    [41, [60, 65, 69], [77, 0, 81, 84, 0, 81, 77, 76]],
+    [43, [59, 62, 67], [79, 0, 83, 86, 83, 79, 74, 0]],
+    [36, [60, 64, 67], [84, 79, 76, 72, 0, 76, 79, 0]],
+    [33, [57, 60, 64], [81, 76, 72, 69, 0, 72, 76, 0]],
+    [41, [60, 65, 69], [77, 81, 84, 81, 77, 0, 74, 77]],
+    [43, [59, 62, 67], [79, 0, 79, 83, 86, 0, 84, 0]],
+  ];
   let next = A.currentTime + .1, bar = 0;
   const schedule = () => {
     while (next < A.currentTime + 1.6) {
-      const ch = chords[bar % 4], t = next;
-      ch.forEach((m, i) => { tone(lp, hz(m), t + i * .02, beat * 3.8, 'triangle', .05); tone(lp, hz(m + 12), t + beat * 2.5 + i * .02, beat * 1.4, 'sine', .018); });
-      tone(lp, hz(ch[0] - 12), t, beat * 1.6, 'sine', .2); tone(lp, hz(ch[0] - 12), t + beat * 2.5, beat * 1.2, 'sine', .15);
-      [0, 2].forEach((b) => tone(musicBus, 120, t + b * beat, .24, 'sine', .32, 45));
-      [1, 3].forEach((b) => noise(musicBus, t + b * beat, .13, 'bandpass', 1700, 0, .1, .8));
-      for (let i = 0; i < 8; i++) noise(musicBus, t + i * beat / 2 + (i % 2 ? beat * .07 : 0), .035, 'highpass', 7000, 0, i % 2 ? .025 : .04);
-      if (bar % 2) for (let i = 0; i < 3; i++) tone(lp, hz(penta[Math.floor(Math.random() * penta.length)]), t + (1 + i * 1.5 + Math.round(Math.random())) * beat / 2 + beat, beat * 1.2, 'sine', .045);
+      const [root, chord, tune] = bars[bar % bars.length], t = next;
+      tone(musicBus, hz(root), t, beat * .8, 'triangle', .22); tone(musicBus, hz(root + 7), t + beat * 2, beat * .8, 'triangle', .2);    // oom
+      [1, 3].forEach((b) => chord.forEach((m) => tone(musicBus, hz(m), t + b * beat, .14, 'triangle', .045)));                           // pah
+      tune.forEach((m, i) => { if (m) mallet(m, t + i * beat / 2 + (i % 2 ? sw : 0)); });
+      [1, 3].forEach((b) => tone(musicBus, 1150, t + b * beat, .05, 'square', .035, 900));                                               // woodblock
+      for (let i = 0; i < 8; i++) noise(musicBus, t + i * beat / 2 + (i % 2 ? sw : 0), .03, 'highpass', 6500, 0, i % 2 ? .02 : .03);     // shaker
+      if (bar % 8 === 7) tone(musicBus, 500, t + beat * 3.4, .32, 'sine', .07, 1500);                                                    // slide whistle into the repeat
       next += beat * 4; bar++;
     }
   };
