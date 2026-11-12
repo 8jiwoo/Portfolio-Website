@@ -20,7 +20,8 @@ window.CONTENT = {
       { title: 'EDIT ME: Club / CCA', sub: 'Role, year', text: 'What you did there.' },
     ] },
     certs: { label: 'Certs', items: [
-      { title: 'EDIT ME: Certification', sub: 'Issuer, year', text: 'One line about it.', links: [{ label: 'Verify', url: '#' }] },
+      { title: 'Licenses & certifications', sub: 'On LinkedIn', text: 'My certifications are listed on my LinkedIn profile.', links: [{ label: 'View on LinkedIn', url: 'https://www.linkedin.com/in/8jiwoo/details/certifications/' }] },
+      // add individual ones here later: { title: 'Name', sub: 'Issuer, year', links: [{ label: 'Verify', url: 'https://...' }] },
     ] },
     name: { label: 'Awards', items: [
       { title: 'EDIT ME: Award', sub: 'Organisation, year', text: 'What it was for.' },
@@ -35,7 +36,7 @@ window.CONTENT = {
     phone: { label: 'Contact', items: [
       { title: 'GitHub', text: 'github.com/8jiwoo', links: [{ label: 'Open', url: 'https://github.com/8jiwoo' }] },
       { title: 'Email', text: 'EDIT ME: you@example.com', links: [{ label: 'Write', url: 'mailto:you@example.com' }] },
-      { title: 'LinkedIn', text: 'EDIT ME', links: [{ label: 'Open', url: '#' }] },
+      { title: 'LinkedIn', text: 'linkedin.com/in/8jiwoo', links: [{ label: 'Open', url: 'https://www.linkedin.com/in/8jiwoo/' }] },
     ] },
   },
 };
