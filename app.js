@@ -60,6 +60,7 @@ in vec2 p; out vec2 vP; void main(){ vP = p; gl_Position = vec4(p, 0., 1.); }`;
 const FS = `#version 300 es
 precision highp float;
 uniform sampler2D uPano, uIds, uEmis, uScrA, uScrB, uPic;
+uniform highp usampler2D uNear;
 uniform vec2 uHalf, uView;
 uniform float uFish, uHover, uHoverA, uLights, uDpr;
 uniform mat3 uHA, uHB, uHC;
@@ -108,7 +109,8 @@ void main(){
   scr = screen(uHA, uScrA, v, scr); scr = screen(uHB, uScrB, v, scr);
   col = mix(col, scr, em.g);
 
-  if (uHover > 0.) {                                                  // glowing outline around the hovered object
+  // uNear says which objects are anywhere near this pixel, so the 33-sample outline only runs around the hovered one
+  if (uHover > 0. && ((texelFetch(uNear, ivec2(min(uv * vec2(256., 128.), vec2(255., 127.))), 0).r >> uint(uHover - 1.)) & 1u) == 1u) {
     float me = idAt(uv) == uHover ? 1. : 0., n1 = 0., n2 = 0.;
     // size of one CSS pixel in panorama units, so the outline keeps the same on-screen thickness at any zoom
     float cl = max(cos(lat), .25);
@@ -238,6 +240,17 @@ Promise.all([
   const c = document.createElement('canvas'); c.width = 2048; c.height = 1024;
   const x = c.getContext('2d', { willReadFrequently: true }); x.imageSmoothingEnabled = false; x.drawImage(ids, 0, 0, 2048, 1024);
   idsData = x.getImageData(0, 0, 2048, 1024).data;
+  // coarse 256x128 map: bit (id-1) is set where that object is within 6 cells (~8 degrees), wider towards the poles. Holds ids 1-16.
+  const raw = new Uint16Array(256 * 128), near = new Uint16Array(256 * 128);
+  for (let y = 0; y < 1024; y++) for (let x = 0; x < 2048; x++) { const id = idsData[(y * 2048 + x) * 4]; if (id) raw[(y >> 3) * 256 + (x >> 3)] |= 1 << (id - 1); }
+  for (let y = 0; y < 128; y++) {
+    const lat = Math.min(Math.PI / 2, Math.abs((y + .5) / 128 - .5) * Math.PI + 6 * Math.PI / 128), rx = Math.min(128, Math.ceil(6 / Math.max(.02, Math.cos(lat))));
+    for (let x = 0; x < 256; x++) { let b = 0; for (let j = Math.max(0, y - 6); j <= Math.min(127, y + 6); j++) for (let i = -rx; i <= rx; i++) b |= raw[j * 256 + ((x + i) & 255)]; near[y * 256 + x] = b; }
+  }
+  gl.activeTexture(gl.TEXTURE6); gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.R16UI, 256, 128, 0, gl.RED_INTEGER, gl.UNSIGNED_SHORT, near);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+  gl.uniform1i(U.uNear, 6);
   $('#pct').textContent = '100%';
   intro.classList.remove('loading');
   requestAnimationFrame(frame);
@@ -279,6 +292,7 @@ function frame(now) {
   if (tw) fovT = null;
   else if (fovT != null) { view.fov += (fovT - view.fov) * .16; if (Math.abs(fovT - view.fov) < .05) fovT = null; }
   clampView();
+  if (ptr && !drag) setHover(pick(ptr[0], ptr[1]));            // every frame, so the glow follows when the room moves under a still cursor
   S.lights += ((S.lightsOn ? 1 : 0) - S.lights) * .18;
   S.hoverA += ((S.hover ? 1 : 0) - S.hoverA) * .25; if (!S.hover && S.hoverA < .02) S.hoverA = 0;   // fully off, no faint leftover glow
   gl.uniform2f(U.uHalf, half[0], half[1]); gl.uniform2f(U.uView, view.yaw * D, view.pitch * D);
@@ -299,12 +313,18 @@ function placeTV() {
 }
 
 // ---------------------------------------------------------------- pointer
-function pick(px, py) {
-  if (!idsData) return 0;
+function idAtPx(px, py) {
   const [u, v] = dirToUV(unproject(px, py));
   return idsData[(Math.min(1023, Math.floor(v * 1024)) * 2048 + (Math.floor(u * 2048) % 2048)) * 4];
 }
-function setHover(id) { if (id) S.lastHover = id; S.hover = id; canvas.classList.toggle('hot', !!id); }
+function pick(px, py) {
+  if (!idsData) return 0;
+  let id = idAtPx(px, py);
+  for (let i = 0; !id && i < 8; i++) id = idAtPx(px + 6 * Math.cos(i * Math.PI / 4), py + 6 * Math.sin(i * Math.PI / 4));   // 6px of forgiveness around small objects
+  return id;
+}
+function setHover(id) { if (id === S.hover) return; if (id) S.lastHover = id; S.hover = id; canvas.classList.toggle('hot', !!id); }
+let ptr = null;                                               // where the mouse is resting, or null when it is off the room
 const touches = new Map(); let pinch = 0;                     // two fingers = pinch to zoom
 canvas.addEventListener('pointerdown', (e) => {
   if (!S.control) return;
@@ -322,6 +342,7 @@ canvas.addEventListener('pointermove', (e) => {
     if (pinch) { tw = null; fovT = null; view.fov *= pinch / d; }
     pinch = d; vel = [0, 0]; return;
   }
+  if (e.pointerType === 'mouse') ptr = [e.clientX, e.clientY];
   if (!drag) return setHover(pick(e.clientX, e.clientY));
   const dx = e.clientX - drag.x, dy = e.clientY - drag.y, k = view.fov / Math.max(W, Hh) * 1.8;
   drag.moved += Math.abs(dx) + Math.abs(dy); drag.x = e.clientX; drag.y = e.clientY;
@@ -335,6 +356,7 @@ canvas.addEventListener('pointerup', (e) => {
   if (click) { const id = pick(e.clientX, e.clientY); if (id) activate(byId[id]); else if (S.active) reset(); }
   if (e.pointerType !== 'mouse') setTimeout(() => setHover(0), 600);
 });
+canvas.addEventListener('pointerleave', () => { ptr = null; if (!drag) setHover(0); });
 canvas.addEventListener('pointercancel', (e) => { touches.delete(e.pointerId); pinch = 0; drag = null; });
 canvas.addEventListener('wheel', (e) => { if (!S.control) return; e.preventDefault(); tw = null;
   const step = e.deltaY * (e.deltaMode === 1 ? 33 : 1);       // line-based wheels report tiny numbers
