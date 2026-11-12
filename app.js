@@ -456,7 +456,7 @@ function tone(dest, f, t, dur, type = 'sine', g = .2, f2) {
   n.gain.setValueAtTime(0, t); n.gain.linearRampToValueAtTime(g, t + .012); n.gain.exponentialRampToValueAtTime(.0005, t + dur);
   o.connect(n).connect(dest); o.start(t); o.stop(t + dur + .02);
 }
-let noiseBuf;
+let noiseBuf, meowBuf;
 function noise(dest, t, dur, type, f0, f1, g = .2, q = 1) {
   const s = A.createBufferSource(), fl = A.createBiquadFilter(), n = A.createGain();
   s.buffer = noiseBuf; s.loop = true; fl.type = type; fl.Q.value = q;
@@ -474,7 +474,8 @@ const SFX = {
   bag: (t) => { for (let i = 0; i < 7; i++) noise(sfxBus, t + i * .06 + Math.random() * .03, .07, 'bandpass', 2200 + Math.random() * 3000, 0, .22, .7); }, // paper rustle
   notebook: (t) => { noise(sfxBus, t, .3, 'highpass', 700, 5200, .22); },                                                                  // page flip
   name: (t) => { [659, 784, 1047].forEach((f, i) => tone(sfxBus, f, t + i * .1, .35, 'triangle', .12)); },                                 // little fanfare
-  frame: (t) => { tone(sfxBus, 620, t, .12, 'sine', .12, 880); tone(sfxBus, 880, t + .1, .3, 'sine', .1, 1320); },                         // bright chirp
+  frame: (t) => { if (meowBuf) { const s = A.createBufferSource(); s.buffer = meowBuf; s.connect(sfxBus); s.start(t); return; }   // meow; the chirp below is the fallback until it has loaded
+    tone(sfxBus, 620, t, .12, 'sine', .12, 880); tone(sfxBus, 880, t + .1, .3, 'sine', .1, 1320); },                         // bright chirp
   speaker: (t) => { tone(sfxBus, 95, t, .2, 'sine', .5, 42); noise(sfxBus, t, .08, 'lowpass', 900, 0, .2); },                              // thump
 };
 function sfx(name) { if (A && SFX[name]) SFX[name](A.currentTime + .01); }
@@ -498,6 +499,7 @@ function startAudio() {
   const [, breeze] = loop('bandpass', 520, .6, .007);                // wind against the windows, slowly rising and falling
   const lfo = A.createOscillator(), depth = A.createGain(); lfo.frequency.value = .07; depth.gain.value = .005; lfo.connect(depth).connect(breeze.gain); lfo.start();
   air.start();
+  fetch('assets/meow.mp3' + VER).then((r) => r.arrayBuffer()).then((b) => A.decodeAudioData(b)).then((b) => { meowBuf = b; }).catch(() => {});
   if (C.music) { musicEl = new Audio(C.music); musicEl.loop = true; musicEl.play().catch(() => {}); applyVolume(); return; }
   // built-in ambient music, made to sound like it comes from the speaker in the room:
   // slow soft chords and a few stray notes, muffled a little and sent through a room echo
