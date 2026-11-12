@@ -210,6 +210,14 @@ function drawLaptop() {
   x.fillStyle = '#c3cfe4'; [0, 1, 2, 3].forEach((i) => x.fillRect(24, 210 + i * 40, 560 - i * 90, 16));
 }
 drawGithub(); drawLaptop();
+// optional picture for the laptop screen: assets/laptop.jpg, centre-cropped to fill it. Without the file the drawn card above stays.
+const lapPic = new Image();
+lapPic.onload = () => {
+  const s = Math.max(640 / lapPic.width, 400 / lapPic.height), w = lapPic.width * s, h = lapPic.height * s;
+  lapCanvas.getContext('2d').drawImage(lapPic, (640 - w) / 2, (400 - h) / 2, w, h);
+  if (lapUpload) lapUpload(lapCanvas);
+};
+lapPic.src = 'assets/laptop.jpg' + VER;
 async function loadGithub() {
   try {
     const j = (u) => fetch(u).then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); });
