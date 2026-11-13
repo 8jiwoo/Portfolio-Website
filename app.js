@@ -13,6 +13,7 @@ const view = { yaw: 0, pitch: 0, fov: 160, fish: 1 };       // degrees; fish 0 =
 const HOME = { yaw: 0, pitch: -3, fov: 120, fish: 0.3 };
 const S = { entered: false, control: false, active: null, hover: 0, hoverA: 0, lights: 0, lightsOn: false, musicOn: true, muted: false };
 const byId = {}; for (const k in M.objects) byId[M.objects[k].id] = k;
+const ONLY = window.ONLY;                                    // contact.html sets this to the few things that stay clickable; undefined = everything
 let W = 1, Hh = 1, half = [1, 1], tw = null, idsData = null;
 
 // ---------------------------------------------------------------- projection (must match the shader)
@@ -323,7 +324,8 @@ function placeTV() {
 // ---------------------------------------------------------------- pointer
 function idAtPx(px, py) {
   const [u, v] = dirToUV(unproject(px, py));
-  return idsData[(Math.min(1023, Math.floor(v * 1024)) * 2048 + (Math.floor(u * 2048) % 2048)) * 4];
+  const id = idsData[(Math.min(1023, Math.floor(v * 1024)) * 2048 + (Math.floor(u * 2048) % 2048)) * 4];
+  return ONLY && !ONLY.includes(byId[id]) ? 0 : id;         // on a cut-down page the rest of the room is scenery
 }
 function pick(px, py) {
   if (!idsData) return 0;
@@ -384,7 +386,7 @@ function activate(name) {
 }
 function reset() {
   S.active = null; panel.classList.add('closed'); tv.classList.remove('live'); markNav();
-  tween(HOME, 2, EASE.q4);
+  tween({ fov: HOME.fov, fish: HOME.fish }, 2, EASE.q4);        // zoom back out but keep looking where you were, not back at the sofa
 }
 function fillCard(d, it, full) {
   if (it.img) {
@@ -435,11 +437,12 @@ $('#back').addEventListener('click', reset);
 addEventListener('keydown', (e) => { if (e.key !== 'Escape') return; if (!modal.classList.contains('closed')) closeModal(); else if (S.active) reset(); });
 
 // menu: the list is repeated three times and the scroll position wraps, so it loops forever
-const track = $('#nav-track'), order = ['computers', 'frame', 'laptop', 'certs', 'name', 'bag', 'notebook', 'phone'];
-for (let r = 0; r < 3; r++) for (const k of order) {
+const track = $('#nav-track'), order = ['computers', 'frame', 'laptop', 'certs', 'name', 'bag', 'notebook', 'phone'].filter((k) => !ONLY || ONLY.includes(k));
+const reps = order.length > 4 ? 3 : 1;                        // a short menu fits on screen, so it does not need to loop
+for (let r = 0; r < reps; r++) for (const k of order) {
   const b = el('button', 'menu-button'); b.type = 'button'; b.dataset.k = k;
   b.append(el('span', '', C.sections[k].label), el('span', 'close', '×'), el('span', 'line'));
-  if (r !== 1) { b.tabIndex = -1; b.setAttribute('aria-hidden', 'true'); }
+  if (reps > 1 && r !== 1) { b.tabIndex = -1; b.setAttribute('aria-hidden', 'true'); }
   b.addEventListener('click', () => { if (S.control) activate(k); });
   track.appendChild(b);
 }
